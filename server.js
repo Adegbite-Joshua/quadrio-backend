@@ -30,6 +30,9 @@ app.use(cors({
 connectDB();
 
 // Routes
+app.get('/', (req, res)=>{
+  res.json({message: "Welcome to Quadrio assignment backend!"})
+})
 app.use('/api/items', itemRoutes);
 app.use('/api/admin', adminRoutes);
 
