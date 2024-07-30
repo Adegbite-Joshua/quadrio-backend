@@ -3,27 +3,25 @@ const Admin = require('../models/admin');
 
 const protectAdminRoutes = async (req, res, next) => {
   let token;
-
-  console.log(req.cookies);
-  console.log(req.cookies.token);
-  if (req.cookies.token) {
-    try {
-      token = req.cookies.token;
-
-      // Verify token
+  
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {      
+    token = req.headers.authorization.split(' ')[1]; 
+      
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
+      req.admin = await Admin.findById(decoded.id);
 
-      // Get admin from the token
-      req.admin = await Admin.findById(decoded.id).select('-password');
+      if (!req.admin) {
+        return res.status(404).json({ message: 'Admin not found' });
+      }
 
       next();
     } catch (error) {
       console.error(error);
       res.status(401).json({ message: 'Not authorized, token failed' });
     }
-  }
-
-  if (!token) {
+  } else {    
     res.status(401).json({ message: 'Not authorized, no token' });
   }
 };
